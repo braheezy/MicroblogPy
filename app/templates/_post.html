@@ -1,0 +1,33 @@
+<!--The first sub-template. The '_' prefix on the filename
+is personal convention to remember sub-templates.-->
+<table class="table table-hover">
+    <tr>
+        <td width="70px">
+            <a href="{{ url_for('main.user', username=post.author.username) }}">
+                <img src="{{ post.author.avatar(70) }}" />
+            </a>
+        </td>
+        <td>
+            <!--We want username to be a link to the profile page, not just the name, so set this variable to use later.-->
+            {% set user_link %}
+                <a href="{{ url_for('main.user', username=post.author.username) }}">
+                    {{ post.author.username }}
+                </a>
+            {% endset %}
+            {{ _('%(username)s said %(when)s',
+                username=user_link, when=moment(post.timestamp).fromNow()) }}
+            <br>
+            <span id="post{{ post.id }}">{{ post.body }}</span>
+            {% if post.language and post.language != g.locale %}
+            <br><br>
+            <span id="translation{{ post.id }}">
+                <a href="javascript:translate(
+                                            '#post{{ post.id }}',
+                                            '#translation{{ post.id }}',
+                                            '{{ post.language }}',
+                                            '{{ g.locale }}');">{{ _('Translate') }}</a>
+            </span>
+            {% endif %}
+        </td>
+    </tr>
+</table>

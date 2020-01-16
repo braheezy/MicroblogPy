@@ -1,0 +1,7 @@
+Generic single-database configuration.
+
+When changes are made to the models guiding the database, the database
+must be migrated.
+
+    flask db migrate -m "<some message describing changes>"
+    flask db upgrade

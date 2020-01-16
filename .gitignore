@@ -1,0 +1,5 @@
+.env
+app.db
+logs/
+.prettierignore
+__pycache__/
