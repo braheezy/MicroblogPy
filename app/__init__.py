@@ -104,7 +104,7 @@ def create_app(config_class=Config):
         if app.config['LOG_TO_STDOUT']:
             stream_handler = logging.StreamHandler()
             stream_handler.setLevel(logging.INFO)
-            app.log.addHandler(stream_handler)
+            app.logger.addHandler(stream_handler)
         else:
             # Write logs to file on disk
             if not os.path.exists('logs'):
