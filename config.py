@@ -45,3 +45,6 @@ class Config(object):
     # For sitewide searching of posts, use Elasticsearch from the
     # ELK stack
     ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL')
+
+    # In support of deployment to Heroku
+    LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
