@@ -64,31 +64,30 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-  {% for message in messages %}
-  <div class="alert alert-info" role="alert">{{ message }}</div>
-  {% endfor %}
-  {% endif %}
-  {% endwith %}
-
-  <!--application content needs to be provided in the app_content block-->
-  {% block app_content %}{% endblock %}
-</div>
-<div class="container">
-  {% if current_user.is_authenticated %}
+  <div class="container">
+    {% if current_user.is_authenticated %}
     {% with tasks = current_user.get_tasks_in_progress() %}
       {% if tasks %}
-        {% for task in tasks %}
-          <div class="alert alert-success" role="alert">
-            {{ task.description }}
-            <span id="{{ task.id }}-progress">{{ task.get_progress() }}</span>%
-          </div>
-        {% endfor %}
+      {% for task in tasks %}
+      <div class="alert alert-success" role="alert">
+        {{ task.description }}
+        <span id="{{ task.id }}-progress">{{ task.get_progress() }}</span>%
+      </div>
+      {% endfor %}
       {% endif %}
     {% endwith %}
-  {% endif %}
+    {% endif %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-info" role="alert">{{ message }}</div>
+      {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <!--application content needs to be provided in the app_content block-->
+    {% block app_content %}{% endblock %}
+  </div>
 {% endblock %}
 
 
@@ -178,6 +177,10 @@ generates the script tag to hold Moment.js-->
         // If count is zero, hide.
         $('#message_count').css('visibility', n ? 'visible': 'hidden');
       }
+      // Update task progress GUI
+      function set_task_progress(task_id, progress) {
+          $('#' + task_id + '-progress').text(progress);
+      }
       /* Implement notificaton polling here so all pages can use it. */
       {% if current_user.is_authenticated %}
         $(function () {
@@ -206,10 +209,6 @@ generates the script tag to hold Moment.js-->
             // Updates notif badge 6 times per minute.
           }, 10000);
         });
-        // Also only show export progress if logged in
-        function set_task_progress(task_id, progress) {
-            $('#' + task_id + '-progress').text(progress);
-          }
         {% endif %}
     </script>
 {% endblock %}
