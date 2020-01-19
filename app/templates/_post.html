@@ -10,9 +10,11 @@ is personal convention to remember sub-templates.-->
         <td>
             <!--We want username to be a link to the profile page, not just the name, so set this variable to use later.-->
             {% set user_link %}
-                <a href="{{ url_for('main.user', username=post.author.username) }}">
-                    {{ post.author.username }}
-                </a>
+                <span class="user_popup">
+                    <a href="{{ url_for('main.user', username=post.author.username) }}">
+                        {{ post.author.username }}
+                    </a>
+                </span>
             {% endset %}
             {{ _('%(username)s said %(when)s',
                 username=user_link, when=moment(post.timestamp).fromNow()) }}

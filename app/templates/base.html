@@ -87,5 +87,60 @@ generates the script tag to hold Moment.js-->
           $(destElem).text("{{ _('Error: Could not contact server.') }}");
         });
       }
+      /* Define function in $() to run when page loads.*/
+      $(function() {
+        /* jQuery syntax to find all elements with class name of user_popup, which in our case is all user links. We attach the hover event to all these links.*/
+        var timer = null;
+        var xhr = null;
+        $('.user_popup').hover(
+          // browser auto dispatches hover events when mouse enters.
+          function(event) {
+            // mouse in event handler
+            var elem = $(event.currentTarget);
+            // Prevent popups from immediately showing
+            timer = setTimeout(function() {
+              timer = null;
+              /* Use jQuery to send Ajax to server to get user popup page and
+              obtain the username based on the context of the hover event.
+              */
+              xhr = $.ajax(
+                    '/user/' + elem.first().text().trim() + '/popup').done(
+                      function(data) {
+                        xhr = null;
+                        // Bootrstrap popover()
+                        elem.popover({
+                          trigger: 'manual',
+                          html: true,
+                          animation: false,
+                          container: elem,
+                          content: data
+                        }).popover('show');
+                        /* Flask-Moment docs say when new elements are added
+                        via Ajax, call this function to appropriately render
+                        */
+                        flask_moment_render_all();
+                      }
+                    );
+            }, 1000);
+          },
+          // Good UX here. Reset timer and clear Ajax request if mouse exits.
+          function(event) {
+            // mouse out event handler
+            var elem = $(event.currentTarget);
+            if (timer) {
+              clearTimeout(timer);
+              timer = null;
+            }
+            else if (xhr) {
+              xhr.abort();
+              xhr = null;
+            }
+            else {
+              // destroy popup
+              elem.popover('destroy');
+            }
+          }
+        )
+      });
     </script>
 {% endblock %}
