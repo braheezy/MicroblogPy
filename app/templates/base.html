@@ -39,6 +39,21 @@
         {% if current_user.is_anonymous %}
         <li><a href="{{ url_for('auth.login') }}">{{ _('Login') }}</a></li>
         {% else %}
+        <li>
+          <a href="{{ url_for('main.messages') }}">
+            {{ _('Messages') }}
+            <!--Bootstrap badge for notifcation in nav bar.-->
+            {% set new_messages = current_user.new_messages() %}
+            {% if new_messages %}
+            <!--Always render badge, but only show if user has messages.-->
+            <span id="message_count" class="badge"
+                  style="visibility: {% if new_messages %}visible
+                                     {% else %}hidden {% endif %};">
+                                     {{ new_messages }}
+            </span>
+            {% endif %}
+          </a>
+        </li>
         <li><a href="{{ url_for('main.user', username=current_user.username) }}">{{ _('Profile') }}</a></li>
         <li><a href="{{ url_for('auth.logout') }}">{{ _('Logout') }}</a></li>
         {% endif %}
@@ -142,5 +157,33 @@ generates the script tag to hold Moment.js-->
           }
         )
       });
+      /* JS to update badge number */
+      function set_message_count(n) {
+        // jQuery to find badge.
+        $('#message_count').text(n);
+        // If count is zero, hide.
+        $('#message_count').css('visibility', n ? 'visible': 'hidden');
+      }
+      /* Implement notificaton polling here so all pages can use it. */
+      {% if current_user.is_authenticated %}
+        $(function () {
+          /* On page load, set a timer that regulates polling for notifs. 
+          setInterval is like setTimeout, but keeps calling callback function
+          at interval.*/
+          var since = 0;
+          setInterval(function () {
+            $.ajax('{{ url_for('main.notifications') }}?since=' + since).done(
+              function (notifications) {
+                for (var i = 0; i < notifications.length; i++) {
+                  if (notifications[i].name == 'unread_message_count')
+                    set_message_count(notifications[i].data);
+                  since = notifications[i].timestamp;
+                }
+              }
+            );
+            // Updates notif badge 6 times per minute.
+          }, 10000);
+        });
+        {% endif %}
     </script>
 {% endblock %}
