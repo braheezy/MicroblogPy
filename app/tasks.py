@@ -1,7 +1,10 @@
-import time, sys
+import time, sys, json
 from rq import get_current_job
 from app import current_app, db
 from app.models import Task
+from flask import render_template
+from app.models import User, Post, Task
+from app.email import send_email
 
 # Make app and its db and email sending available to background tasks.
 # Pushing a context makes the application be the "current" application instance.
@@ -26,7 +29,7 @@ def _set_task_progress(progress):
         db.session.commit()
 
 # Export JSON of all posts by the user, done on a background task.
-def export_post(user_id):
+def export_posts(user_id):
     # RQ is doing task, not Flask, so exceptions not handled gracefully.
     try:
         user = User.query.get(user_id)
@@ -41,7 +44,7 @@ def export_post(user_id):
             # Sleep is really just to see progress.
             time.sleep(2)
             i += 1
-            _set_task_progress(100 * i)
+            _set_task_progress(100 * i / total_posts)
 
             # Send user an email of results
             send_email('[Microblog-Py] Your blog posts',

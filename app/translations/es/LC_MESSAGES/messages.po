@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-01-19 12:55-0800\n"
+"POT-Creation-Date: 2020-01-19 15:27-0800\n"
 "PO-Revision-Date: 2020-01-11 11:06-0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
 
-#: app/__init__.py:31
+#: app/__init__.py:33
 msgid "Please log in to access this page."
 msgstr "Por favor ingrese para acceder a esta página."
 
@@ -31,8 +31,8 @@ msgid "Error: the translation service failed."
 msgstr "Error: el servicio de traducción falló."
 
 #: app/auth/email.py:10
-msgid "[Microblog] Reset Your Password"
-msgstr "[Microblog] Nueva Contraseña"
+msgid "[Microblog-Py] Reset Your Password"
+msgstr "[Microblog-Py] Restablezca su contraseña"
 
 #: app/auth/forms.py:13 app/auth/forms.py:20 app/main/forms.py:11
 msgid "Username"
@@ -158,13 +158,21 @@ msgstr "No estás siguiendo a %(username)s."
 msgid "Explore"
 msgstr "Explorar"
 
-#: app/main/routes.py:247
+#: app/main/routes.py:248
 msgid "Your message has been sent."
 msgstr "Tu mensaje ha sido enviado."
 
-#: app/main/routes.py:250
+#: app/main/routes.py:251
 msgid "Send Message"
 msgstr "Enviar Mensaje"
+
+#: app/main/routes.py:300
+msgid "An export task is currently in progress!"
+msgstr "¡Una tarea de exportación está actualmente en progreso!"
+
+#: app/main/routes.py:302
+msgid "Exporting posts..."
+msgstr "Exportando publicaciones..."
 
 #: app/templates/_post.html:19
 #, python-format
@@ -176,8 +184,8 @@ msgid "Translate"
 msgstr "Traducir"
 
 #: app/templates/base.html:6
-msgid "Welcome to Microblog"
-msgstr "Bienvenido a Microblog"
+msgid "Welcome to Microblog-Py"
+msgstr "Bienvenido a Microblog-Py"
 
 #: app/templates/base.html:24
 msgid "Home"
@@ -191,15 +199,15 @@ msgstr "Ingresar"
 msgid "Messages"
 msgstr "Mensajes"
 
-#: app/templates/base.html:47
+#: app/templates/base.html:57
 msgid "Profile"
 msgstr "Perfil"
 
-#: app/templates/base.html:48
+#: app/templates/base.html:58
 msgid "Logout"
 msgstr "Salir"
 
-#: app/templates/base.html:92
+#: app/templates/base.html:116
 msgid "Error: Could not contact server."
 msgstr "Error: no se pudo contactar con el servidor."
 
@@ -208,11 +216,11 @@ msgstr "Error: no se pudo contactar con el servidor."
 msgid "Hi,  %(username)s!"
 msgstr "¡Hola, %(username)s!"
 
-#: app/templates/index.html:19 app/templates/user.html:42
+#: app/templates/index.html:19 app/templates/user.html:62
 msgid "Newer posts"
 msgstr "Artículos siguientes"
 
-#: app/templates/index.html:24 app/templates/user.html:46
+#: app/templates/index.html:24 app/templates/user.html:66
 msgid "Older posts"
 msgstr "Artículos previos"
 
@@ -245,33 +253,37 @@ msgstr "Enviar Mensaje a %(recipient)s"
 msgid "User"
 msgstr "Usuario"
 
-#: app/templates/user.html:12 app/templates/user_popup.html:13
+#: app/templates/user.html:13 app/templates/user_popup.html:13
 msgid "Last seen on"
 msgstr "Última visita"
 
-#: app/templates/user.html:14 app/templates/user_popup.html:16
+#: app/templates/user.html:18 app/templates/user_popup.html:16
 #, python-format
 msgid "%(count)d followers"
 msgstr "%(count)d seguidores"
 
-#: app/templates/user.html:14 app/templates/user_popup.html:17
+#: app/templates/user.html:19 app/templates/user_popup.html:17
 #, python-format
 msgid "%(count)d following"
 msgstr "siguiendo a %(count)d"
 
-#: app/templates/user.html:16
+#: app/templates/user.html:24
 msgid "Edit your profile"
 msgstr "Editar tu perfil"
 
-#: app/templates/user.html:18 app/templates/user_popup.html:21
+#: app/templates/user.html:29
+msgid "Export your posts"
+msgstr "Exporta tus publicaciones"
+
+#: app/templates/user.html:35 app/templates/user_popup.html:21
 msgid "Follow"
 msgstr "Seguir"
 
-#: app/templates/user.html:20 app/templates/user_popup.html:25
+#: app/templates/user.html:39 app/templates/user_popup.html:25
 msgid "Unfollow"
 msgstr "Dejar de seguir"
 
-#: app/templates/user.html:26
+#: app/templates/user.html:46
 msgid "Send private message"
 msgstr "Enviar mensaje privado"
 
@@ -310,4 +322,10 @@ msgstr "Ha ocurrido un error inesperado"
 #: app/templates/errors/500.html:5
 msgid "The administrator has been notified. Sorry for the inconvenience!"
 msgstr "El administrador ha sido notificado. ¡Lamentamos la inconveniencia!"
+
+#~ msgid "[Microblog] Reset Your Password"
+#~ msgstr "[Microblog] Nueva Contraseña"
+
+#~ msgid "Welcome to Microblog"
+#~ msgstr "Bienvenido a Microblog"
 

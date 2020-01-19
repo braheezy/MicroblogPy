@@ -29,6 +29,7 @@
                             {{ _('Export your posts') }}
                         </a>
                     </p>
+                {% endif %}
                 {% elif not current_user.is_following(user) %}
                     <p>
                         <a href="{{ url_for('main.follow', username=user.username) }}">{{ _('Follow') }}</a>

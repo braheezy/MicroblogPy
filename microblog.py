@@ -23,5 +23,6 @@ def make_shell_context():
         'User': User,
         'Post': Post,
         'Message': Message,
-        'Notification': Notification
+        'Notification': Notification,
+        'Task': Task
     }

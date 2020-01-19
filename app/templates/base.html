@@ -76,7 +76,21 @@
   <!--application content needs to be provided in the app_content block-->
   {% block app_content %}{% endblock %}
 </div>
+<div class="container">
+  {% if current_user.is_authenticated %}
+    {% with tasks = current_user.get_tasks_in_progress() %}
+      {% if tasks %}
+        {% for task in tasks %}
+          <div class="alert alert-success" role="alert">
+            {{ task.description }}
+            <span id="{{ task.id }}-progress">{{ task.get_progress() }}</span>%
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  {% endif %}
 {% endblock %}
+
 
 <!--Include Moment here, so everythin has access. This include function
 generates the script tag to hold Moment.js-->
@@ -175,8 +189,16 @@ generates the script tag to hold Moment.js-->
             $.ajax('{{ url_for('main.notifications') }}?since=' + since).done(
               function (notifications) {
                 for (var i = 0; i < notifications.length; i++) {
-                  if (notifications[i].name == 'unread_message_count')
-                    set_message_count(notifications[i].data);
+                  switch (notifications[i].name) {
+                    case 'unread_message_count':
+                      set_message_count(notifications[i].data);
+                      break;
+                    case 'task_progress':
+                      set_task_progress(
+                        notifications[i].data.task_id,
+                        notifications[i].data.progress);
+                      break;
+                  }
                   since = notifications[i].timestamp;
                 }
               }
@@ -184,6 +206,10 @@ generates the script tag to hold Moment.js-->
             // Updates notif badge 6 times per minute.
           }, 10000);
         });
+        // Also only show export progress if logged in
+        function set_task_progress(task_id, progress) {
+            $('#' + task_id + '-progress').text(progress);
+          }
         {% endif %}
     </script>
 {% endblock %}

@@ -126,7 +126,7 @@ def create_app(config_class=Config):
             app.logger.addHandler(file_handler)
 
         app.logger.addHandler(logging.INFO)
-        app.logger.info('Microblog-Py startup')
+        # app.logger.info('Microblog-Py startup')
 
     return app
 
