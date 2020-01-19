@@ -227,6 +227,22 @@ class User(UserMixin, db.Model):
         n = Notification(name=name, payload_json=json.dumps(data), user=self)
         db.session.add(n)
         return n
+    
+    '''
+    Helpers to make access to background jobs easier.
+    '''
+    def launch_task(self, name, description, *args, **kwargs):
+        ''' Add task to queue and database. '''
+        rq_job = current_app.task_queue.enqueue('app.tasks.' + name, self.id, *args, **kwargs)
+        task = Task(is=rq_job.get_id(), name=name, description=description, user=self)
+        db.session.add(task)
+        return task
+
+    def get_tasks_in_progress(self):
+        return Task.query.filter_by(user=self, complete=False).all()
+    
+    def get_task_in_progress(self, name):
+        return Task.query.filter_by(name=name, user=self, complete=False).first()
 
     # __repr__ tells Python how to print objects of this class
     def __repr__(self):

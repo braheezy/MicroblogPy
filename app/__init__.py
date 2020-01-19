@@ -14,6 +14,8 @@ from elasticsearch import Elasticsearch
 # defined when application is starting.
 from flask_babel import Babel, lazy_gettext as _l
 from config import Config
+from redis import Redis
+import rq
 '''
 Declare extensions here.
 '''
@@ -78,6 +80,10 @@ def create_app(config_class=Config):
     app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
         if app.config['ELASTICSEARCH_URL'] else None
 
+    # Background tasks manager initialization. This is better than threads.
+    app.redis = Redis.from_url(app.config['REDIS_URL'])
+    app.task_queue = rq.Queue('microblog-tasks', connection=app.redis)
+
     if not app.debug and not app.testing:
         # Do email notifcaton of errors
         if app.config['MAIL_SERVER']:
@@ -92,7 +98,7 @@ def create_app(config_class=Config):
                 mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
                 fromaddr='no-reply@' + app.config['MAIL_SERVER'],
                 toaddrs=app.config['ADMINS'],
-                subject='Microblog Failure',
+                subject='Microblog-Py Failure',
                 credentials=auth,
                 secure=secure)
             mail_handler.setLevel(logging.ERROR)
@@ -120,7 +126,7 @@ def create_app(config_class=Config):
             app.logger.addHandler(file_handler)
 
         app.logger.addHandler(logging.INFO)
-        app.logger.info('Microblog startup')
+        app.logger.info('Microblog-Py startup')
 
     return app
 

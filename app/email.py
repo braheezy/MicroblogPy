@@ -15,12 +15,27 @@ def send_async_email(app, msg):
 
 
 # Sends an email to recipients.
-def send_email(subject, sender, recipients, text_body, html_body):
+def send_email(subject,
+               sender,
+               recipients,
+               text_body,
+               html_body,
+               attachments=None,
+               sync=False):
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = text_body
     msg.html = html_body
-    # Shoot of send email Thread
-    # Pass the actual instance and not the proxy object.
-    # See: https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure
-    Thread(target=send_async_email,
-           args=(current_app._get_current_object(), msg)).start()
+    if attachments:
+        for attachment in attachments:
+            # In Python, using '*' let's us expand the collection as
+            # args. Conveience.
+            msg.attach(*attachment)
+    # Send Ajax or not?
+    if sync:
+        mail.send(msg)
+    else:
+        # Shoot of send email Thread
+        # Pass the actual instance and not the proxy object.
+        # See: https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure
+        Thread(target=send_async_email,
+               args=(current_app._get_current_object(), msg)).start()
