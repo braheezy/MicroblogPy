@@ -1,8 +1,9 @@
 from app.api import bp
-from flask import jsonify
+from flask import jsonify, g, abort
 from app.models import User
 from app import db
 from app.api.errors import bad_request
+from app.api.auth import token_auth
 
 
 @bp.route('/users/<int:id>', methods=['GET'])
