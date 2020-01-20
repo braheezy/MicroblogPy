@@ -1,10 +1,10 @@
 from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import time
 import jwt
 import json
-from flask import current_app
+from flask import current_app, url_for
 from hashlib import md5
 # A 'mixin' class the contains generic implementations that usually
 # work as is. Note the Flask-Login ext requires certain properties
@@ -14,6 +14,9 @@ from app.search import add_to_index, remove_from_index, query_index
 # Background tasking.
 import redis
 import rq
+# To support API tokens
+import base64
+import os
 
 
 class SearchableMixin(object):
@@ -82,6 +85,36 @@ class SearchableMixin(object):
             add_to_index(cls.__tablename__, obj)
 
 
+class PaginatiedAPIMixin(object):
+    '''
+    Imbue the ability to paginate API results.
+    '''
+    @staticmethod
+    def to_collection_dict(query, page, per_page, endpoint, **kwargs):
+        '''Create a dict of user collection representations.
+        '''
+        resources = query.paginate(page, per_page, False)
+        data = {
+            'items': [item.to_dict() for item in resources.items],
+            '_meta': {
+                'page': page,
+                'per_page': per_page,
+                'total_pages': resources.pages,
+                'total_items': resources.total
+            },
+            '_links': {
+                'self':
+                url_for(endpoint, page=page, per_page=per_page, **kwargs),
+                'next':
+                url_for(endpoint, page=page + 1, per_page=per_page, **kwargs)
+                if resources.has_next else None,
+                'prev':
+                url_for(endpoint, page=page - 1, per_page=per_page, **kwargs)
+                if resources.has_prev else None
+            }
+        }
+
+
 # Bind event handlers to our custom functions.
 db.event.listen(db.session, 'before_commit', SearchableMixin.before_commit)
 db.event.listen(db.session, 'after_commit', SearchableMixin.after_commit)
@@ -107,7 +140,7 @@ followers = db.Table(
 
 # Classes define the structure (or schema) for this app.
 # Note the addition of th mixin, adding generic code.
-class User(UserMixin, db.Model):
+class User(PaginatiedAPIMixin, UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(64), index=True, unique=True)
@@ -147,6 +180,10 @@ class User(UserMixin, db.Model):
                                     lazy='dynamic')
     # A user tracks the background tasks it spawns
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
+
+    # API token support.
+    token = db.Column(db.String(32), index=True, unique=True)
+    token_expiration = db.Column(db.DateTime)
 
     # The Werkzeug package comes with Flask and provides some
     # crypto functions, like those used below.
@@ -252,6 +289,68 @@ class User(UserMixin, db.Model):
     def get_task_in_progress(self, name):
         return Task.query.filter_by(name=name, user=self,
                                     complete=False).first()
+
+    # API support. Note of this representation of Users is different
+    # than what's in the database.
+    def to_dict(self, include_email=False):
+        '''Create dict of API data from a User object.
+        '''
+        data = {
+            'id': self.id,
+            'username': self.username,
+            'last_seen': self.last_seen.isoformat() + 'Z',
+            'about_me': self.about_me,
+            'post_count': self.posts.count(),
+            'follower_count': self.followers.count(),
+            'followed_count': self.followed.count(),
+            '_links': {
+                'self': url_for('api.get_user', id=self.id),
+                'followers': url_for('api.get_followers', id=self.id),
+                'followed': url_for('api.get_followed', id=self.id),
+                'avatar': self.avatar(128)
+            }
+        }
+        # Only include email of user requesting info.
+        if include_email:
+            data['email'] = self.email
+        return data
+
+    # Need to parse request into User object.
+    def from_dict(self, data, new_user=False):
+        # Loop over any field this client can use.
+        for field in ['username', 'email', 'about_me']:
+            if field in data:
+                setattr(self, field, data[field])
+        if new_user and 'password' in data:
+            self.set_password(data['password'])
+
+    # API token support.
+    # User signs in, gets token with expiration time.
+    def get_token(self, expires_in=3600):
+        '''Generate token by using random string encoded in base64.
+        '''
+        now = datetime.utcnow()
+        # If user's current token still has more than a minute left, don't
+        # create a new token.
+        if self.token and self.token_expiration > now + timedelta(seconds=60):
+            return self.token
+        self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
+        self.token_expiration = now + timedelta(seconds=expires_in)
+        db.session.add(self)
+        return self.token
+
+    def revoke_token(self):
+        '''Kill token by setting expiration time to 1 second.
+        Good practice to have a way to kill a token.
+        '''
+        self.token_expiration = datetime.utcnow() - timedelta(seconds=1)
+
+    @staticmethod
+    def check_token(token):
+        user = User.query.filter_by(token=token).first()
+        if user is None or user.token_expiration < datetime.utcnow():
+            return None
+        return user
 
     # __repr__ tells Python how to print objects of this class
     def __repr__(self):
